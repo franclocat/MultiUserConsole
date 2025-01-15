@@ -11,4 +11,5 @@ namespace Client.Services.Interfaces;
 public interface IAuthService
 {
     Task<ServiceResult> Register(UserDTO userDTO);
+    Task<ServiceResult> Login(UserDTO userDto);
 }
