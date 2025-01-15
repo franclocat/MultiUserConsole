@@ -9,6 +9,7 @@ using Microsoft.EntityFrameworkCore;
 using System.Text;
 using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Server.Services;
 
@@ -29,7 +30,6 @@ public class UserService : IUserService
         string salt = Convert.ToBase64String(RandomNumberGenerator.GetBytes(128));
         string userHash = BuildHash(userDTO.Password, salt);
 
-
         User newUser = new User()
         {
             Username = userDTO.Username,
@@ -39,7 +39,7 @@ public class UserService : IUserService
 
         if (_db.Users.Any(user => user.Username == userDTO.Username))
         {
-            throw new Exception("A user with this username already exists.");
+            throw new ApplicationException("A user with this username already exists.");
         }
 
         try
