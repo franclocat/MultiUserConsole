@@ -1,4 +1,7 @@
-﻿using Spectre.Console;
+﻿using Client.Services;
+using Client.Services.Interfaces;
+using Shared.DTO;
+using Spectre.Console;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -11,17 +14,18 @@ internal class Menu
 {
     private List<MenuOption> _menuOptions;
     private bool _isClosing = false;
+    private IAuthService _authService;
 
-    /// <summary>Initializes a new instance of the <see cref="Menu" /> class.</summary>
-    public Menu()
+    public Menu(IAuthService authService)
     {
         _menuOptions = new List<MenuOption>()
         {
-            new MenuOption { Key = ConsoleKey.E, Description = "Exit", Action = Exit }
+            new MenuOption { Key = ConsoleKey.E, Description = "Exit", Action = Exit },
+            new MenuOption { Key = ConsoleKey.R, Description = "Register", Action = Register }
         };
+        _authService = authService;
     }
 
-    /// <summary>Shows this instance.</summary>
     public void Show()
     {
         while (!_isClosing)
@@ -44,5 +48,27 @@ internal class Menu
     {
         _isClosing = true;
         AnsiConsole.Write(new Markup("[red]Good Bye![/]"));
+    }
+
+    private void Register()
+    {
+        UserDTO user = new UserDTO();
+
+        Console.WriteLine("Register");
+        Console.WriteLine("Enter Username");
+        user.Username = Console.ReadLine();
+        Console.WriteLine("Enter Password");
+        user.Password = Console.ReadLine();
+
+        ServiceResult result = _authService.Register(user).Result;
+
+        if (result.IsSuccessful)
+        {
+            Console.WriteLine("Register successful.");
+        }
+        else
+        {
+            Console.WriteLine(result.ErrorMessage);
+        }
     }
 }
