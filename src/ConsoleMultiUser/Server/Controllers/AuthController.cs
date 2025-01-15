@@ -1,5 +1,4 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Server.Services;
 using Server.Services.Interfaces;
 using Shared.DTO;
 
@@ -27,5 +26,15 @@ public class AuthController : ControllerBase
         {
             return BadRequest(ex.Message);
         }
+    }
+
+    [HttpPost("Login")]
+    public async Task<ActionResult<string>> Login(UserDTO userDto)
+    {
+        if (await _userService.ValidateCredentials(userDto)) 
+        {
+            return Ok();
+        }
+        return Unauthorized("Username or password is wrong");
     }
 }

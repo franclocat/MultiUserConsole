@@ -5,6 +5,7 @@ using Shared.DTO;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using System.Security.Cryptography;
+using Microsoft.EntityFrameworkCore;
 
 namespace Server.Services;
 
@@ -47,6 +48,22 @@ public class UserService : IUserService
 
         userDTO.Id = newUser.Id;
         return userDTO;
+    }
+
+    public async Task<bool> ValidateCredentials(UserDTO userDto)
+    {
+        User? user = await _db.Users.FirstOrDefaultAsync(user => user.Username == userDto.Username);
+
+        if (user != null) 
+        {
+            string hash = BuildHash(userDto.Password, user.Salt);
+
+            if (hash.Equals(user.Hash))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     private static string BuildHash(string password, string salt)
