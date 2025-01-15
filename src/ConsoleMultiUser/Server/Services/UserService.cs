@@ -6,16 +6,21 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
 using System.Security.Cryptography;
 using Microsoft.EntityFrameworkCore;
+using System.Text;
+using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace Server.Services;
 
 public class UserService : IUserService
 {
     private readonly Db _db;
+    private readonly IConfiguration _configuration;
 
-    public UserService(Db db)
+    public UserService(Db db, IConfiguration configuration)
     {
         _db = db;
+        _configuration = configuration;
     }
 
     public async Task<UserDTO> Add(UserDTO userDTO)
@@ -23,6 +28,7 @@ public class UserService : IUserService
         //Safe password handling
         string salt = Convert.ToBase64String(RandomNumberGenerator.GetBytes(128));
         string userHash = BuildHash(userDTO.Password, salt);
+
 
         User newUser = new User()
         {
@@ -64,6 +70,30 @@ public class UserService : IUserService
             }
         }
         return false;
+    }
+
+    public async Task<string?> GenerateJwtIfCredentialsValid(UserDTO user)
+    {
+        try
+        {
+            SymmetricSecurityKey securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
+            SigningCredentials credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
+
+            if (await ValidateCredentials(user))
+            {
+                JwtSecurityToken token = new JwtSecurityToken(
+                expires: DateTime.Now.AddMinutes(30),
+                signingCredentials: credentials);
+                return new JwtSecurityTokenHandler().WriteToken(token);
+            }
+
+            throw new ApplicationException("Invalid Credentials.");
+        }
+        catch (Exception ex)
+        {
+            throw;
+        }
+
     }
 
     private static string BuildHash(string password, string salt)

@@ -31,10 +31,22 @@ public class AuthController : ControllerBase
     [HttpPost("Login")]
     public async Task<ActionResult<string>> Login(UserDTO userDto)
     {
-        if (await _userService.ValidateCredentials(userDto)) 
+        try
         {
-            return Ok();
+            if (await _userService.ValidateCredentials(userDto))
+            {
+                string? token = await _userService.GenerateJwtIfCredentialsValid(userDto);
+                return Ok(token);
+            }
+            return Unauthorized("Username or password is wrong");
         }
-        return Unauthorized("Username or password is wrong");
+        catch (ApplicationException ex)
+        {
+            return Unauthorized(ex.Message);
+        }
+        catch (Exception ex)
+        {
+            return BadRequest($"An unhandled exception ocurred: {ex.Message}");
+        }
     }
 }
