@@ -21,6 +21,7 @@ internal class Menu
         _menuOptions = new List<MenuOption>()
         {
             new MenuOption { Key = ConsoleKey.E, Description = "Exit", Action = Exit },
+            new MenuOption { Key = ConsoleKey.L, Description = "Login", Action = Login },
             new MenuOption { Key = ConsoleKey.R, Description = "Register", Action = Register }
         };
         _authService = authService;
@@ -48,6 +49,7 @@ internal class Menu
     {
         _isClosing = true;
         AnsiConsole.Write(new Markup("[red]Good Bye![/]"));
+        Console.WriteLine();
     }
 
     private void Register()
@@ -69,6 +71,29 @@ internal class Menu
         else
         {
             Console.WriteLine(result.ErrorMessage);
+        }
+    }
+
+    private void Login()
+    {
+        UserDTO user = new UserDTO();
+
+        AnsiConsole.Write(new Markup("[blue]Login:[/]"));
+        Console.WriteLine();
+        Console.WriteLine("Enter Username");
+        user.Username = Console.ReadLine();
+        Console.WriteLine("Enter Password");
+        user.Password = Console.ReadLine();
+
+        ServiceResult result = _authService.Login(user).Result;
+
+        if (result.IsSuccessful)
+        {
+            AnsiConsole.Write(new Markup("[green]Login successful.[/]"));
+        }
+        else
+        {
+            AnsiConsole.Write(new Markup($"[red]{result.ErrorMessage}[/]"));
         }
     }
 }

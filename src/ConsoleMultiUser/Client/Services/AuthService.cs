@@ -18,6 +18,13 @@ internal class AuthService : IAuthService
         _client = new HttpClient();
         _client.BaseAddress = new Uri(baseUrl + _ENDPOINT);
     }
+
+    public async Task<ServiceResult> Login(UserDTO userDto)
+    {
+        HttpResponseMessage response = await _client.PostAsJsonAsync("Login", userDto);
+        return new ServiceResult(response);
+    }
+
     public async Task<ServiceResult> Register(UserDTO userDto)
     {
         HttpResponseMessage response = await _client.PostAsJsonAsync("Register", userDto);
