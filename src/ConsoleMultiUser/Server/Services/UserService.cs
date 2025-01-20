@@ -82,7 +82,8 @@ public class UserService : IUserService
             if (await ValidateCredentials(user))
             {
                 JwtSecurityToken token = new JwtSecurityToken(
-                expires: DateTime.Now.AddMinutes(30),
+                //expires: DateTime.Now.AddSeconds(30), //Adjust the token lifetime for example .AddMinutes(45)
+                expires: DateTime.Now.AddMinutes(int.Parse(_configuration["Jwt:ExpirationInMinutes"])),
                 signingCredentials: credentials);
                 return new JwtSecurityTokenHandler().WriteToken(token);
             }

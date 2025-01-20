@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 using Server.Services.Interfaces;
 using Shared.DTO;
 
@@ -48,5 +50,12 @@ public class AuthController : ControllerBase
         {
             return BadRequest($"An unhandled exception ocurred: {ex.Message}");
         }
+    }
+
+    [HttpGet("checkauthorization")]
+    [Authorize]
+    public IActionResult CheckAuthorization()
+    {
+        return Ok();
     }
 }
