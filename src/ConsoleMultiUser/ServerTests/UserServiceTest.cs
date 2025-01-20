@@ -1,4 +1,6 @@
-﻿using System.Security.Cryptography.X509Certificates;
+﻿using Client.Services.Interfaces;
+using System.Diagnostics;
+using System.Security.Cryptography.X509Certificates;
 
 namespace ServerTests;
 
@@ -6,7 +8,7 @@ namespace ServerTests;
 public class UserServiceTest
 {
     [TestMethod]
-    public void TestBuildHash()
+    public void CheckAuthorization_DisplaysNotLoggedIn_WhenUserIsNull()
     {
 
     }

@@ -49,9 +49,9 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-app.UseAuthentication(); // Auth
-
 app.UseHttpsRedirection();
+
+app.UseAuthentication(); // Auth
 
 app.UseAuthorization();
 
