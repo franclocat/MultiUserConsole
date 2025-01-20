@@ -10,7 +10,6 @@ internal class Menu
     private List<MenuOption> _menuOptions;
     private bool _isClosing = false;
     private IAuthService _authService;
-    private string _authToken = string.Empty;
     private UserDTO? _currentUser = null;
 
     public Menu(IAuthService authService)
@@ -85,9 +84,8 @@ internal class Menu
         if (result.IsSuccessful)
         {
             AnsiConsole.Write(new Markup("[green]Register successful.[/]"));
-            _authToken = result.Value.TokenDto.Token;
             _currentUser = result.Value;
-            _authService.SetAuthToken(_authToken);
+            _authService.SetAuthToken(result.Value.TokenDto.Token);
         }
         else
         {
@@ -113,9 +111,8 @@ internal class Menu
         {
             Console.WriteLine();
             AnsiConsole.Write(new Markup("[green]Login successful.[/]"));
-            _authToken = result.Value.TokenDto.Token;
             _currentUser = result.Value;
-            _authService.SetAuthToken(_authToken);
+            _authService.SetAuthToken(result.Value.TokenDto.Token);
         }
         else
         {
@@ -144,9 +141,8 @@ internal class Menu
 
     private void Logout()
     {
-        _authToken = string.Empty;
         _currentUser = null;
-        _authService.SetAuthToken(_authToken);
+        _authService.SetAuthToken(string.Empty);
 
         ServiceResult result = _authService.CheckAuthorization().Result;
         if (!result.IsSuccessful)

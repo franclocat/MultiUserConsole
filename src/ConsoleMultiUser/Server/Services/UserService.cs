@@ -70,7 +70,7 @@ public class UserService : IUserService
         return false;
     }
 
-    public async Task<UserDTO?> GenerateJwtIfCredentialsValid(UserDTO user)
+    public async Task<TokenDTO?> GenerateJwtIfCredentialsValid(UserDTO user)
     {
         try
         {
@@ -85,17 +85,11 @@ public class UserService : IUserService
                 signingCredentials: credentials);
 
                 //return new JwtSecurityTokenHandler().WriteToken(token);
-                return new UserDTO
-                {
-                    Id = user.Id,
-                    Username = user.Username,
-                    Password = user.Password,
-                    TokenDto = new TokenDTO
+                return new TokenDTO
                     {
                         Token = new JwtSecurityTokenHandler().WriteToken(token),
                         ExpiryDate = token.ValidTo.ToLocalTime()
-                    }
-                };
+                    };
             }
 
             throw new ApplicationException("Invalid Credentials.");

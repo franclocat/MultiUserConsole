@@ -24,8 +24,9 @@ public class AuthController : ControllerBase
         try
         {
             await _userService.Add(userDto);
-            UserDTO? userWithToken = await _userService.GenerateJwtIfCredentialsValid(userDto);
-            return Ok(userWithToken);
+            TokenDTO? userWithToken = await _userService.GenerateJwtIfCredentialsValid(userDto);
+            userDto.TokenDto = userWithToken;
+            return Ok(userDto);
         }
         catch (Exception ex)
         {
@@ -40,8 +41,9 @@ public class AuthController : ControllerBase
         {
             if (await _userService.ValidateCredentials(userDto))
             {
-                UserDTO? userWithToken = await _userService.GenerateJwtIfCredentialsValid(userDto);
-                return Ok(userWithToken);
+                TokenDTO? tokenDto = await _userService.GenerateJwtIfCredentialsValid(userDto);
+                userDto.TokenDto = tokenDto;
+                return Ok(userDto);
             }
             return Unauthorized("Username or password is wrong");
         }
