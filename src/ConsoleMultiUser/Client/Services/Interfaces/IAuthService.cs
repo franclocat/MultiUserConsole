@@ -4,9 +4,8 @@ namespace Client.Services.Interfaces;
 
 public interface IAuthService
 {
-    Task<ServiceResult> Register(UserDTO userDTO);
-    //Task<ServiceResult> Login(UserDTO userDto);
-    Task<GenericServiceResult<string>> Login(UserDTO userDto);
+    Task<GenericServiceResult<UserDTO>> Register(UserDTO userDTO);
+    Task<GenericServiceResult<UserDTO>> Login(UserDTO userDto);
     void SetAuthToken(string token);
     Task<ServiceResult> CheckAuthorization();
 }

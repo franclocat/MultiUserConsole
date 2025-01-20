@@ -16,16 +16,16 @@ internal class AuthService : IAuthService
         _client.BaseAddress = new Uri(baseUrl + _ENDPOINT);
     }
 
-    public async Task<GenericServiceResult<string>> Login(UserDTO userDto)
+    public async Task<GenericServiceResult<UserDTO>> Login(UserDTO userDto)
     {
         HttpResponseMessage response = await _client.PostAsJsonAsync("Login", userDto);
-        return new GenericServiceResult<string>(response);
+        return new GenericServiceResult<UserDTO>(response);
     }
 
-    public async Task<ServiceResult> Register(UserDTO userDto)
+    public async Task<GenericServiceResult<UserDTO>> Register(UserDTO userDto)
     {
         HttpResponseMessage response = await _client.PostAsJsonAsync("Register", userDto);
-        return new ServiceResult(response);
+        return new GenericServiceResult<UserDTO>(response);
     }
 
     public void SetAuthToken(string token)

@@ -9,4 +9,5 @@ public class UserDTO
     public string Username { get; set; }
     [Required]
     public string Password { get; set; }
+    public TokenDTO? TokenDto { get; set; }
 }
