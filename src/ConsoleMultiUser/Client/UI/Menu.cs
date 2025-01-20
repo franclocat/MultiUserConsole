@@ -15,6 +15,8 @@ internal class Menu
     private List<MenuOption> _menuOptions;
     private bool _isClosing = false;
     private IAuthService _authService;
+    private string _authToken = string.Empty;
+    private UserDTO? _currentUser = null;
 
     public Menu(IAuthService authService)
     {
@@ -22,7 +24,9 @@ internal class Menu
         {
             new MenuOption { Key = ConsoleKey.E, Description = "Exit", Action = Exit },
             new MenuOption { Key = ConsoleKey.L, Description = "Login", Action = Login },
-            new MenuOption { Key = ConsoleKey.R, Description = "Register", Action = Register }
+            new MenuOption { Key = ConsoleKey.R, Description = "Register", Action = Register },
+            new MenuOption { Key = ConsoleKey.C, Description = "Check Authorization", Action = CheckAuthorization },
+            new MenuOption { Key = ConsoleKey.O, Description = "Logout", Action = Logout },
         };
         _authService = authService;
     }
@@ -85,11 +89,50 @@ internal class Menu
         Console.WriteLine("Enter Password");
         user.Password = Console.ReadLine();
 
-        ServiceResult result = _authService.Login(user).Result;
+        GenericServiceResult<string> result = _authService.Login(user).Result;
 
         if (result.IsSuccessful)
         {
             AnsiConsole.Write(new Markup("[green]Login successful.[/]"));
+            _authToken = result.Value;
+            _currentUser = user;
+            _authService.SetAuthToken(_authToken);
+        }
+        else
+        {
+            AnsiConsole.Write(new Markup($"[red]{result.ErrorMessage}[/]"));
+        }
+    }
+
+    private void CheckAuthorization()
+    {
+        if (_currentUser == null)
+        {
+            AnsiConsole.Write(new Markup($"[red]Not logged in![/]"));
+            return;
+        }
+
+        ServiceResult result = _authService.CheckAuthorization().Result;
+        if (result.IsSuccessful)
+        {
+            AnsiConsole.Write(new Markup("[green]Auth successfully checked.[/]"));
+        }
+        else
+        {
+            AnsiConsole.Write(new Markup($"[red]{result.ErrorMessage}[/]"));
+        }
+    }
+
+    private void Logout()
+    {
+        _authToken = string.Empty;
+        _currentUser = null;
+        _authService.SetAuthToken(_authToken);
+
+        ServiceResult result = _authService.CheckAuthorization().Result;
+        if (!result.IsSuccessful)
+        {
+            AnsiConsole.Write(new Markup($"[blue]Logged out.[/]"));
         }
         else
         {
