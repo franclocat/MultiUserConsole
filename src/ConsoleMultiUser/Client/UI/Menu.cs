@@ -34,17 +34,13 @@ internal class Menu
     //        //display username
     //        if (_currentUser != null)
     //        {
-    //            AnsiConsole.Write(new Rows(
-    //                new Markup($"[blue]Logged in:[/] {_currentUser.Username}"),
-    //                new Markup($"[blue]Token expiry date:[/] {_currentUser.TokenDto.ExpiryDate}")
-    //                ));
+    //            Console.WriteLine($"Logged in: {_currentUser.Username}");
+    //            Console.WriteLine($"Token expiry date: {_currentUser.TokenDto.ExpiryDate}");
     //        }
     //        else
     //        {
-    //            AnsiConsole.Write(new Rows(
-    //               new Markup($"[blue]Log in to display username.[/]")));
+    //            Console.WriteLine("Log in to display username.");
     //        }
-    //        Console.WriteLine();
 
     //        //display options
     //        _menuOptions.ForEach(option => Console.WriteLine(option.DisplayInfo()));
@@ -138,10 +134,10 @@ internal class Menu
 
         AnsiConsole.Write(new Markup("[blue]Login:[/]"));
         Console.WriteLine();
-        AnsiConsole.Write(new Markup("[gray]Enter Username: [/]"));
-        user.Username = Console.ReadLine();
-        AnsiConsole.Write(new Markup("[gray]Enter Password: [/]"));
-        user.Password = Console.ReadLine();
+        //user.Username = Console.ReadLine();
+        user.Username = AnsiConsole.Prompt(new TextPrompt<string>("[gray]Enter Username: [/]"));
+        //user.Password = Console.ReadLine();
+        user.Password = AnsiConsole.Prompt(new TextPrompt<string>("[gray]Enter Password: [/]").Secret());
         Console.WriteLine();
 
         GenericServiceResult<UserDTO?> result = _authService.Login(user).Result;
@@ -156,6 +152,8 @@ internal class Menu
         else
         {
             AnsiConsole.Write(new Markup($"[red]{result.ErrorMessage}[/]"));
+            Console.WriteLine();
+            Login();
         }
     }
 
@@ -180,13 +178,18 @@ internal class Menu
 
     private void Logout()
     {
+        if (_currentUser == null) 
+        {
+            AnsiConsole.Write(new Markup($"[red]You are not logged in.[/]"));
+            return;
+        }
         _currentUser = null;
         _authService.SetAuthToken(string.Empty);
 
         ServiceResult result = _authService.CheckAuthorization().Result;
         if (!result.IsSuccessful)
         {
-            AnsiConsole.Write(new Markup($"[blue]Logged out.[/]"));
+            AnsiConsole.Write(new Markup($"[red]Logged out.[/]"));
         }
         else
         {

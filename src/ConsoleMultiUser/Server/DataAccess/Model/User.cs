@@ -10,5 +10,5 @@ public class User
     public string Password { get; set; } //Can be deleted but wont be added to the DB because of the NotMapped Attribute
     public string Salt { get; set; } = string.Empty;
     public string Hash { get; set; } = string.Empty;
-    public List<Role> Roles { get; set; }
+    public ICollection<Role> Roles { get; set; }
 }
