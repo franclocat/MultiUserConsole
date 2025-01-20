@@ -25,6 +25,41 @@ internal class Menu
         _authService = authService;
     }
 
+    //public void Show()
+    //{
+    //    while (!_isClosing)
+    //    {
+    //        Console.Clear();
+
+    //        //display username
+    //        if (_currentUser != null)
+    //        {
+    //            AnsiConsole.Write(new Rows(
+    //                new Markup($"[blue]Logged in:[/] {_currentUser.Username}"),
+    //                new Markup($"[blue]Token expiry date:[/] {_currentUser.TokenDto.ExpiryDate}")
+    //                ));
+    //        }
+    //        else
+    //        {
+    //            AnsiConsole.Write(new Rows(
+    //               new Markup($"[blue]Log in to display username.[/]")));
+    //        }
+    //        Console.WriteLine();
+
+    //        //display options
+    //        _menuOptions.ForEach(option => Console.WriteLine(option.DisplayInfo()));
+    //        ConsoleKey key = Console.ReadKey(true).Key;
+    //        MenuOption? selectedOption = _menuOptions.FirstOrDefault(option => option.Key == key);
+
+    //        if (selectedOption != null)
+    //        {
+    //            Console.WriteLine();
+    //            selectedOption.Action.Invoke();
+    //            Console.ReadKey();
+    //        }
+    //    }
+    //}
+
     public void Show()
     {
         while (!_isClosing)
@@ -44,12 +79,14 @@ internal class Menu
                 AnsiConsole.Write(new Rows(
                    new Markup($"[blue]Log in to display username.[/]")));
             }
-            Console.WriteLine();
 
-            //display options
-            _menuOptions.ForEach(option => Console.WriteLine(option.DisplayInfo()));
-            ConsoleKey key = Console.ReadKey(true).Key;
-            MenuOption? selectedOption = _menuOptions.FirstOrDefault(option => option.Key == key);
+            MenuOption selectedOption = AnsiConsole.Prompt(
+                new SelectionPrompt<MenuOption>()
+                    .Title("[gray]Select an option from the menu[/]")
+                    .PageSize(10)
+                    .MoreChoicesText("[grey](Move up and down to reveal more fruits)[/]")
+                    .AddChoices(_menuOptions)
+                    );
 
             if (selectedOption != null)
             {
@@ -59,6 +96,8 @@ internal class Menu
             }
         }
     }
+
+
 
     private void Exit()
     {
@@ -79,7 +118,7 @@ internal class Menu
         user.Password = Console.ReadLine();
         Console.WriteLine();
 
-        GenericServiceResult<UserDTO> result = _authService.Register(user).Result;
+        GenericServiceResult<UserDTO?> result = _authService.Register(user).Result;
 
         if (result.IsSuccessful)
         {
@@ -105,7 +144,7 @@ internal class Menu
         user.Password = Console.ReadLine();
         Console.WriteLine();
 
-        GenericServiceResult<UserDTO> result = _authService.Login(user).Result;
+        GenericServiceResult<UserDTO?> result = _authService.Login(user).Result;
 
         if (result.IsSuccessful)
         {

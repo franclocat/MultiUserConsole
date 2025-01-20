@@ -16,4 +16,9 @@ internal class MenuOption
     {
         return $"{(char)Key} - {Description}";
     }
+
+    public override string ToString()
+    {
+        return Description;
+    }
 }
