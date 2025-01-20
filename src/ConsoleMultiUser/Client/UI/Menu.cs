@@ -152,8 +152,6 @@ internal class Menu
         else
         {
             AnsiConsole.Write(new Markup($"[red]{result.ErrorMessage}[/]"));
-            Console.WriteLine();
-            Login();
         }
     }
 
