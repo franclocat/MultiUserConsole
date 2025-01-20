@@ -6,5 +6,5 @@ public interface IUserService
 {
     Task<UserDTO> Add(UserDTO userDTO);
     Task<bool> ValidateCredentials(UserDTO userDto);
-    Task<string?> GenerateJwtIfCredentialsValid(UserDTO userDto);
+    Task<UserDTO?> GenerateJwtIfCredentialsValid(UserDTO userDto);
 }

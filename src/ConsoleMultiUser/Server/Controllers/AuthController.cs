@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
 using Server.Services.Interfaces;
 using Shared.DTO;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace Server.Controllers;
 
@@ -22,7 +23,9 @@ public class AuthController : ControllerBase
     {
         try
         {
-            return await _userService.Add(userDto);
+            await _userService.Add(userDto);
+            UserDTO? userWithToken = await _userService.GenerateJwtIfCredentialsValid(userDto);
+            return Ok(userWithToken);
         }
         catch (Exception ex)
         {
@@ -31,14 +34,14 @@ public class AuthController : ControllerBase
     }
 
     [HttpPost("Login")]
-    public async Task<ActionResult<string>> Login(UserDTO userDto)
+    public async Task<ActionResult<UserDTO>> Login(UserDTO userDto)
     {
         try
         {
             if (await _userService.ValidateCredentials(userDto))
             {
-                string? token = await _userService.GenerateJwtIfCredentialsValid(userDto);
-                return Ok(token);
+                UserDTO? userWithToken = await _userService.GenerateJwtIfCredentialsValid(userDto);
+                return Ok(userWithToken);
             }
             return Unauthorized("Username or password is wrong");
         }
@@ -52,7 +55,7 @@ public class AuthController : ControllerBase
         }
     }
 
-    [HttpGet("checkauthorization")]
+    [HttpGet("Checkauthorization")]
     [Authorize]
     public IActionResult CheckAuthorization()
     {

@@ -2,11 +2,6 @@
 using Client.Services.Interfaces;
 using Shared.DTO;
 using Spectre.Console;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Client.UI;
 
@@ -36,6 +31,23 @@ internal class Menu
         while (!_isClosing)
         {
             Console.Clear();
+
+            //display username
+            if (_currentUser != null)
+            {
+                AnsiConsole.Write(new Rows(
+                    new Markup($"[blue]Logged in:[/] {_currentUser.Username}"),
+                    new Markup($"[blue]Token expiry date:[/] {_currentUser.TokenDto.ExpiryDate}")
+                    ));
+            }
+            else
+            {
+                AnsiConsole.Write(new Rows(
+                   new Markup($"[blue]Log in to display username.[/]")));
+            }
+            Console.WriteLine();
+
+            //display options
             _menuOptions.ForEach(option => Console.WriteLine(option.DisplayInfo()));
             ConsoleKey key = Console.ReadKey(true).Key;
             MenuOption? selectedOption = _menuOptions.FirstOrDefault(option => option.Key == key);
@@ -60,21 +72,26 @@ internal class Menu
     {
         UserDTO user = new UserDTO();
 
-        Console.WriteLine("Register");
-        Console.WriteLine("Enter Username");
+        AnsiConsole.Write(new Markup("[blue]Register[/]"));
+        Console.WriteLine();
+        AnsiConsole.Write(new Markup("[gray]Enter Username: [/]"));
         user.Username = Console.ReadLine();
-        Console.WriteLine("Enter Password");
+        AnsiConsole.Write(new Markup("[gray]Enter Password: [/]"));
         user.Password = Console.ReadLine();
+        Console.WriteLine();
 
-        ServiceResult result = _authService.Register(user).Result;
+        GenericServiceResult<UserDTO> result = _authService.Register(user).Result;
 
         if (result.IsSuccessful)
         {
-            Console.WriteLine("Register successful.");
+            AnsiConsole.Write(new Markup("[green]Register successful.[/]"));
+            _authToken = result.Value.TokenDto.Token;
+            _currentUser = result.Value;
+            _authService.SetAuthToken(_authToken);
         }
         else
         {
-            Console.WriteLine(result.ErrorMessage);
+            AnsiConsole.Write(new Markup($"[red]{result.ErrorMessage}[/]"));
         }
     }
 
@@ -84,18 +101,20 @@ internal class Menu
 
         AnsiConsole.Write(new Markup("[blue]Login:[/]"));
         Console.WriteLine();
-        Console.WriteLine("Enter Username");
+        AnsiConsole.Write(new Markup("[gray]Enter Username: [/]"));
         user.Username = Console.ReadLine();
-        Console.WriteLine("Enter Password");
+        AnsiConsole.Write(new Markup("[gray]Enter Password: [/]"));
         user.Password = Console.ReadLine();
+        Console.WriteLine();
 
-        GenericServiceResult<string> result = _authService.Login(user).Result;
+        GenericServiceResult<UserDTO> result = _authService.Login(user).Result;
 
         if (result.IsSuccessful)
         {
+            Console.WriteLine();
             AnsiConsole.Write(new Markup("[green]Login successful.[/]"));
-            _authToken = result.Value;
-            _currentUser = user;
+            _authToken = result.Value.TokenDto.Token;
+            _currentUser = result.Value;
             _authService.SetAuthToken(_authToken);
         }
         else

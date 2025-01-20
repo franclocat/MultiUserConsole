@@ -1,15 +1,13 @@
-﻿using Server.DataAccess;
+﻿using Microsoft.AspNetCore.Cryptography.KeyDerivation;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
+using Server.DataAccess;
 using Server.DataAccess.Model;
 using Server.Services.Interfaces;
 using Shared.DTO;
-using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Cryptography.KeyDerivation;
-using System.Security.Cryptography;
-using Microsoft.EntityFrameworkCore;
-using System.Text;
-using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
+using System.Security.Cryptography;
+using System.Text;
 
 namespace Server.Services;
 
@@ -72,7 +70,7 @@ public class UserService : IUserService
         return false;
     }
 
-    public async Task<string?> GenerateJwtIfCredentialsValid(UserDTO user)
+    public async Task<UserDTO?> GenerateJwtIfCredentialsValid(UserDTO user)
     {
         try
         {
@@ -85,7 +83,19 @@ public class UserService : IUserService
                 //expires: DateTime.Now.AddSeconds(30), //Adjust the token lifetime for example .AddMinutes(45)
                 expires: DateTime.Now.AddMinutes(int.Parse(_configuration["Jwt:ExpirationInMinutes"])),
                 signingCredentials: credentials);
-                return new JwtSecurityTokenHandler().WriteToken(token);
+
+                //return new JwtSecurityTokenHandler().WriteToken(token);
+                return new UserDTO
+                {
+                    Id = user.Id,
+                    Username = user.Username,
+                    Password = user.Password,
+                    TokenDto = new TokenDTO
+                    {
+                        Token = new JwtSecurityTokenHandler().WriteToken(token),
+                        ExpiryDate = token.ValidTo.ToLocalTime()
+                    }
+                };
             }
 
             throw new ApplicationException("Invalid Credentials.");
