@@ -1,9 +1,8 @@
 ﻿using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Mvc;
+using Server.DataAccess.Model;
 using Server.Services.Interfaces;
 using Shared.DTO;
-using System.IdentityModel.Tokens.Jwt;
 
 namespace Server.Controllers;
 
@@ -23,10 +22,10 @@ public class AuthController : ControllerBase
     {
         try
         {
-            await _userService.Add(userDto);
-            TokenDTO? userWithToken = await _userService.GenerateJwtIfCredentialsValid(userDto);
-            userDto.TokenDto = userWithToken;
-            return Ok(userDto);
+            UserDTO createdUser = await _userService.Add(userDto);
+            TokenDTO? userWithToken = await _userService.GenerateJwtIfCredentialsValid(createdUser);
+            createdUser.TokenDto = userWithToken;
+            return Ok(createdUser);
         }
         catch (Exception ex)
         {
@@ -39,17 +38,14 @@ public class AuthController : ControllerBase
     {
         try
         {
-            if (await _userService.ValidateCredentials(userDto))
+            UserDTO? validatedUser = await _userService.ValidateCredentials(userDto);
+            if (validatedUser != null)
             {
-                TokenDTO? tokenDto = await _userService.GenerateJwtIfCredentialsValid(userDto);
-                userDto.TokenDto = tokenDto;
-                return Ok(userDto);
+                TokenDTO? tokenDto = await _userService.GenerateJwtIfCredentialsValid(validatedUser);
+                validatedUser.TokenDto = tokenDto;
+                return Ok(validatedUser);
             }
             return Unauthorized("Username or password is wrong");
-        }
-        catch (ApplicationException ex)
-        {
-            return Unauthorized(ex.Message);
         }
         catch (Exception ex)
         {
@@ -59,6 +55,7 @@ public class AuthController : ControllerBase
 
     [HttpGet("Checkauthorization")]
     [Authorize]
+    [Authorize(Roles = $"{Policies.Admin},{Policies.Customer}")]
     public IActionResult CheckAuthorization()
     {
         return Ok();

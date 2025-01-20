@@ -6,6 +6,7 @@ using Server.DataAccess.Model;
 using Server.Services.Interfaces;
 using Shared.DTO;
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Security.Cryptography;
 using System.Text;
 
@@ -54,7 +55,7 @@ public class UserService : IUserService
         return userDTO;
     }
 
-    public async Task<bool> ValidateCredentials(UserDTO userDto)
+    public async Task<UserDTO?> ValidateCredentials(UserDTO userDto)
     {
         User? user = await _db.Users.FirstOrDefaultAsync(user => user.Username == userDto.Username);
 
@@ -64,35 +65,44 @@ public class UserService : IUserService
 
             if (hash.Equals(user.Hash))
             {
-                return true;
+                return new UserDTO
+                {
+                    Id = user.Id,
+                    Username = user.Username,
+                    Password = user.Password
+                };
             }
         }
-        return false;
+        return null;
     }
 
-    public async Task<TokenDTO?> GenerateJwtIfCredentialsValid(UserDTO user)
+    public async Task<TokenDTO?> GenerateJwtIfCredentialsValid(UserDTO userDto)
     {
         try
         {
             SymmetricSecurityKey securityKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]));
             SigningCredentials credentials = new SigningCredentials(securityKey, SecurityAlgorithms.HmacSha256);
 
-            if (await ValidateCredentials(user))
-            {
-                JwtSecurityToken token = new JwtSecurityToken(
-                //expires: DateTime.Now.AddSeconds(30), //Adjust the token lifetime for example: .AddMinutes(45)
-                expires: DateTime.Now.AddMinutes(int.Parse(_configuration["Jwt:ExpirationInMinutes"])),
-                signingCredentials: credentials);
+            //get user and roles from db
+            User? userFromDb = await _db.Users
+                .Include(user => user.Roles)
+                .FirstOrDefaultAsync(user => user.Id == userDto.Id);
 
-                //return new JwtSecurityTokenHandler().WriteToken(token);
-                return new TokenDTO
-                    {
-                        Token = new JwtSecurityTokenHandler().WriteToken(token),
-                        ExpiryDate = token.ValidTo.ToLocalTime()
-                    };
-            }
+            JwtSecurityToken token = new JwtSecurityToken(
+            expires: DateTime.Now.AddMinutes(int.Parse(_configuration["Jwt:ExpirationInMinutes"])),
+            signingCredentials: credentials,
+            //add user roles as claims in the token
+            claims: userFromDb.Roles.Select(role => new Claim(ClaimTypes.Role, role.Name))
+            );
 
-            throw new ApplicationException("Invalid Credentials.");
+
+            //return new JwtSecurityTokenHandler().WriteToken(token); //gives a string as a result
+            return new TokenDTO
+                {
+                    Token = new JwtSecurityTokenHandler().WriteToken(token),
+                    ExpiryDate = token.ValidTo.ToLocalTime(),
+                    Roles = token.Claims.Select(role =>  role.Value.ToUpper()).ToList()
+                };
         }
         catch (Exception ex)
         {

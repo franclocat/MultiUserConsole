@@ -10,5 +10,4 @@ public class UserDTO
     [Required]
     public string Password { get; set; }
     public TokenDTO? TokenDto { get; set; }
-    public List<RoleDTO>? Roles { get; set; }
 }
