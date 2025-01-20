@@ -13,4 +13,14 @@ public static class DTOMapper
             Password = user.Password
         };
     }
+
+    public static ProductDTO ToDto(this Product product)
+    {
+        return new ProductDTO
+        {
+            Id = product.Id,
+            Title = product.Title,
+            Description = product.Description
+        };
+    }
 }
