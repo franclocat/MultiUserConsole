@@ -10,9 +10,10 @@ internal class Menu
     private List<MenuOption> _menuOptions;
     private bool _isClosing = false;
     private IAuthService _authService;
+    private IProductService _productService;
     private UserDTO? _currentUser = null;
 
-    public Menu(IAuthService authService)
+    public Menu(IAuthService authService, IProductService productService)
     {
         _menuOptions = new List<MenuOption>()
         {
@@ -20,9 +21,12 @@ internal class Menu
             new MenuOption { Key = ConsoleKey.L, Description = "Login", Action = Login },
             new MenuOption { Key = ConsoleKey.R, Description = "Register", Action = Register },
             new MenuOption { Key = ConsoleKey.C, Description = "Check Authorization", Action = CheckAuthorization },
+            new MenuOption { Key = ConsoleKey.A, Description = "Add Product", Action = AddProduct },
+            new MenuOption { Key = ConsoleKey.U, Description = "Edit Product", Action = EditProduct },
             new MenuOption { Key = ConsoleKey.O, Description = "Logout", Action = Logout },
         };
         _authService = authService;
+        _productService = productService;
     }
 
     //public void Show()
@@ -188,6 +192,40 @@ internal class Menu
         if (!result.IsSuccessful)
         {
             AnsiConsole.Write(new Markup($"[red]Logged out.[/]"));
+        }
+        else
+        {
+            AnsiConsole.Write(new Markup($"[red]{result.ErrorMessage}[/]"));
+        }
+    }
+
+    private void AddProduct()
+    {
+        ProductDTO product = new ProductDTO();
+        product.Title = AnsiConsole.Prompt(new TextPrompt<string>("[gray]Enter Product Title: [/]"));
+        product.Description = AnsiConsole.Prompt(new TextPrompt<string>("[gray]Enter Product Description: [/]"));
+
+        ServiceResult result = _productService.Add(product).Result;
+        if (!result.IsSuccessful)
+        {
+            AnsiConsole.Write(new Markup($"[green]Product added.[/]"));
+        }
+        else
+        {
+            AnsiConsole.Write(new Markup($"[red]{result.ErrorMessage}[/]"));
+        }
+    }
+
+    private void EditProduct()
+    {
+        ProductDTO product = new ProductDTO();
+        product.Title = AnsiConsole.Prompt(new TextPrompt<string>("[gray]Enter Product Title: [/]"));
+        product.Description = AnsiConsole.Prompt(new TextPrompt<string>("[gray]Enter Product Description: [/]"));
+
+        ServiceResult result = _productService.Update(product).Result;
+        if (!result.IsSuccessful)
+        {
+            AnsiConsole.Write(new Markup($"[green]Product updated.[/]"));
         }
         else
         {

@@ -5,27 +5,26 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Shared.DTO
+namespace Shared.DTO;
+
+public class ProductDTO
 {
-    public class ProductDTO
+    public long Id { get; set; }
+
+    [Required]
+    [MaxLength(50)]
+    public string Title { get; set; }
+
+    [MaxLength(100)]
+    public string Description { get; set; }
+
+    public ProductDTO Clone()
     {
-        public long Id { get; set; }
-
-        [Required]
-        [MaxLength(50)]
-        public string Title { get; set; }
-
-        [MaxLength(100)]
-        public string Description { get; set; }
-
-        public ProductDTO Clone()
+        return new ProductDTO
         {
-            return new ProductDTO
-            {
-                Id = Id,
-                Title = Title,
-                Description = Description
-            };
-        }
+            Id = Id,
+            Title = Title,
+            Description = Description
+        };
     }
 }

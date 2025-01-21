@@ -10,7 +10,8 @@ namespace Client
         {
             const string URI = "https://localhost:7078/api";
             IAuthService authService = new AuthService(URI);
-            Menu menu = new Menu(authService);
+            IProductService productService = new ProductService(URI);
+            Menu menu = new Menu(authService, productService);
             menu.Show();
         }
     }
