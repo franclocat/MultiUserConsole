@@ -1,12 +1,13 @@
 ﻿using Client.Services.Interfaces;
 using Shared.DTO;
+using System.Net.Http.Headers;
 using System.Net.Http.Json;
 
 namespace Client.Services;
 
 internal class ProductService : IProductService
 {
-    private const string _ENDPOINT = "/Product/";
+    private const string _ENDPOINT = "/Product";
     private readonly HttpClient _client;
     private string _authToken = string.Empty;
     public ProductService(string baseUrl)
@@ -29,12 +30,13 @@ internal class ProductService : IProductService
 
     public void SetAuthToken(string token)
     {
+        _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         _authToken = token;
     }
 
     public async Task<GenericServiceResult<ProductDTO>> Update(ProductDTO productDto)
     {
-        HttpResponseMessage response = await _client.PutAsJsonAsync($"{productDto.Id}", productDto);
+        HttpResponseMessage response = await _client.PutAsJsonAsync($"/{productDto.Id}", productDto);
         return new GenericServiceResult<ProductDTO>(response);
     }
 }

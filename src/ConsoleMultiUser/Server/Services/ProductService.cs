@@ -45,7 +45,7 @@ public class ProductService : IProductService
 
     public async Task<ProductDTO> Update(int id, ProductDTO productDto)
     {
-        Product toUpdateProduct = await _db.Products.FirstOrDefaultAsync(p => p.Id == id);
+        Product? toUpdateProduct = await _db.Products.FindAsync(id);
 
         toUpdateProduct.Title = productDto.Title;
         toUpdateProduct.Description = productDto.Description;
