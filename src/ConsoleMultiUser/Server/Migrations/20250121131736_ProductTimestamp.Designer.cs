@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Server.DataAccess;
 
@@ -11,9 +12,11 @@ using Server.DataAccess;
 namespace Server.Migrations
 {
     [DbContext(typeof(Db))]
-    partial class DbModelSnapshot : ModelSnapshot
+    [Migration("20250121131736_ProductTimestamp")]
+    partial class ProductTimestamp
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

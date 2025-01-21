@@ -10,9 +10,10 @@ internal class Menu
     private List<MenuOption> _menuOptions;
     private bool _isClosing = false;
     private IAuthService _authService;
+    private IProductService _productService;
     private UserDTO? _currentUser = null;
 
-    public Menu(IAuthService authService)
+    public Menu(IAuthService authService, IProductService productService)
     {
         _menuOptions = new List<MenuOption>()
         {
@@ -20,9 +21,13 @@ internal class Menu
             new MenuOption { Key = ConsoleKey.L, Description = "Login", Action = Login },
             new MenuOption { Key = ConsoleKey.R, Description = "Register", Action = Register },
             new MenuOption { Key = ConsoleKey.C, Description = "Check Authorization", Action = CheckAuthorization },
+            new MenuOption { Key = ConsoleKey.A, Description = "Add Product", Action = AddProduct },
+            new MenuOption { Key = ConsoleKey.U, Description = "Edit Product", Action = EditProduct },
+            new MenuOption { Key = ConsoleKey.U, Description = "Show Products", Action = ShowProducts },
             new MenuOption { Key = ConsoleKey.O, Description = "Logout", Action = Logout },
         };
         _authService = authService;
+        _productService = productService;
     }
 
     //public void Show()
@@ -148,6 +153,7 @@ internal class Menu
             AnsiConsole.Write(new Markup("[green]Login successful.[/]"));
             _currentUser = result.Value;
             _authService.SetAuthToken(result.Value.TokenDto.Token);
+            _productService.SetAuthToken(result.Value.TokenDto.Token);
         }
         else
         {
@@ -188,6 +194,80 @@ internal class Menu
         if (!result.IsSuccessful)
         {
             AnsiConsole.Write(new Markup($"[red]Logged out.[/]"));
+        }
+        else
+        {
+            AnsiConsole.Write(new Markup($"[red]{result.ErrorMessage}[/]"));
+        }
+    }
+
+    private void AddProduct()
+    {
+        ProductDTO product = new ProductDTO();
+        product.Title = AnsiConsole.Prompt(new TextPrompt<string>("[gray]Enter Product Title: [/]"));
+        product.Description = AnsiConsole.Prompt(new TextPrompt<string>("[gray]Enter Product Description: [/]"));
+
+        ServiceResult result = _productService.Add(product).Result;
+        if (result.IsSuccessful)
+        {
+            AnsiConsole.Write(new Markup($"[green]Product added.[/]"));
+        }
+        else
+        {
+            AnsiConsole.Write(new Markup($"[red]{result.ErrorMessage}[/]"));
+        }
+    }
+
+    private void EditProduct()
+    {
+        GenericServiceResult<IEnumerable<ProductDTO>> resultGetAll = _productService.GetAll().Result;
+        if (resultGetAll.IsSuccessful && resultGetAll.Value != null)
+        {
+            ProductDTO selectedOption = AnsiConsole.Prompt(
+                new SelectionPrompt<ProductDTO>()
+                    .Title("[gray]Select an option from the menu[/]")
+                    .PageSize(10)
+                    .MoreChoicesText("[grey](Move up and down to reveal more fruits)[/]")
+                    .AddChoices(resultGetAll.Value)
+                    );
+
+            AnsiConsole.Write(new Markup($"[gray]{selectedOption}[/]"));
+            Console.WriteLine();
+
+            selectedOption.Title = AnsiConsole.Prompt(new TextPrompt<string>("[gray]Enter Product Title: [/]"));
+            selectedOption.Description = AnsiConsole.Prompt(new TextPrompt<string>("[gray]Enter Product Description: [/]"));
+
+            GenericServiceResult<ProductDTO> resultUpdate = _productService.Update(selectedOption).Result;
+            if (resultUpdate.IsSuccessful)
+            {
+                AnsiConsole.Write(new Markup($"[green]Product successfully updated.[/]"));
+            }
+            else
+            {
+                AnsiConsole.Write(new Markup($"[red]{resultUpdate.ErrorMessage}[/]"));
+            }
+        } else
+        {
+            AnsiConsole.Write(new Markup($"[red]{resultGetAll.ErrorMessage}[/]"));
+        }
+    }
+
+    private async void ShowProducts()
+    {
+        GenericServiceResult<IEnumerable<ProductDTO>> result = _productService.GetAll().Result;
+        if (result.IsSuccessful && result.Value != null)
+        {
+            var table = new Table();
+            table.AddColumn("Id");
+            table.AddColumn("Title");
+            table.AddColumn("Description");
+
+            foreach (ProductDTO product in result.Value)
+            {
+                table.AddRow($"{product.Id}", $"{product.Title}", $"{product.Description}");
+            }
+
+            AnsiConsole.Write(table);
         }
         else
         {
