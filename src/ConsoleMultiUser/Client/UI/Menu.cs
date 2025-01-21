@@ -220,18 +220,35 @@ internal class Menu
 
     private void EditProduct()
     {
-        ProductDTO product = new ProductDTO();
-        product.Title = AnsiConsole.Prompt(new TextPrompt<string>("[gray]Enter Product Title: [/]"));
-        product.Description = AnsiConsole.Prompt(new TextPrompt<string>("[gray]Enter Product Description: [/]"));
+        GenericServiceResult<IEnumerable<ProductDTO>> resultGetAll = _productService.GetAll().Result;
+        if (resultGetAll.IsSuccessful && resultGetAll.Value != null)
+        {
+            ProductDTO selectedOption = AnsiConsole.Prompt(
+                new SelectionPrompt<ProductDTO>()
+                    .Title("[gray]Select an option from the menu[/]")
+                    .PageSize(10)
+                    .MoreChoicesText("[grey](Move up and down to reveal more fruits)[/]")
+                    .AddChoices(resultGetAll.Value)
+                    );
 
-        ServiceResult result = _productService.Update(product).Result;
-        if (result.IsSuccessful)
+            AnsiConsole.Write(new Markup($"[gray]{selectedOption}[/]"));
+            Console.WriteLine();
+
+            selectedOption.Title = AnsiConsole.Prompt(new TextPrompt<string>("[gray]Enter Product Title: [/]"));
+            selectedOption.Description = AnsiConsole.Prompt(new TextPrompt<string>("[gray]Enter Product Description: [/]"));
+
+            GenericServiceResult<ProductDTO> resultUpdate = _productService.Update(selectedOption).Result;
+            if (resultUpdate.IsSuccessful)
+            {
+                AnsiConsole.Write(new Markup($"[green]Product successfully updated.[/]"));
+            }
+            else
+            {
+                AnsiConsole.Write(new Markup($"[red]{resultUpdate.ErrorMessage}[/]"));
+            }
+        } else
         {
-            AnsiConsole.Write(new Markup($"[green]Product updated.[/]"));
-        }
-        else
-        {
-            AnsiConsole.Write(new Markup($"[red]{result.ErrorMessage}[/]"));
+            AnsiConsole.Write(new Markup($"[red]{resultGetAll.ErrorMessage}[/]"));
         }
     }
 

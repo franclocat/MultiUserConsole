@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Server.Services.Interfaces;
 using Shared.DTO;
 using System.Data;
@@ -29,24 +30,23 @@ public class ProductController : ControllerBase
     [Authorize(Roles = Policies.Admin)]
     public async Task<ActionResult<ProductDTO>> Update(int id, ProductDTO productDto)
     {
-        if (productDto.Id != id)
-        {
-            return BadRequest();
-        }
-
-        if (!await _productService.IsExisting(id)) 
-        {
-            return NotFound($"The product with id {id} could not be found.");
-        }
-
         try
         {
+            if (productDto.Id != id)
+            {
+                return BadRequest();
+            }
+
             ProductDTO updatedProduct = await _productService.Update(id, productDto);
             return Ok(updatedProduct);
         }
-        catch (DBConcurrencyException ce)
+        catch (KeyNotFoundException ex)
         {
-            return NotFound();
+            return NotFound(ex.Message);
+        }
+        catch (DbUpdateConcurrencyException ex)
+        {
+            return Conflict(ex.Message);
         }
         catch (Exception ex)
         {

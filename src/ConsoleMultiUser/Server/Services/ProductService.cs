@@ -47,6 +47,16 @@ public class ProductService : IProductService
     {
         Product? toUpdateProduct = await _db.Products.FindAsync(id);
 
+        if (toUpdateProduct == null) 
+        {
+            throw new KeyNotFoundException($"Product with ID {id} not found.");
+        }
+
+        if (!toUpdateProduct.Timestamp.SequenceEqual(productDto.Timestamp))
+        {
+            throw new DbUpdateConcurrencyException("The item may have changed while the updates were being applied.");
+        }
+
         toUpdateProduct.Title = productDto.Title;
         toUpdateProduct.Description = productDto.Description;
 

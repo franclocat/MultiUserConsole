@@ -8,7 +8,8 @@ public class Product
     [Required]
     [MaxLength(50)]
     public string Title { get; set; }
-
     [MaxLength(100)]
     public string Description { get; set; }
+    [Timestamp]
+    public byte[]? Timestamp { get; set; }
 }

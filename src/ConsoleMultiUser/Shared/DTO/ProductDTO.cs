@@ -9,7 +9,7 @@ namespace Shared.DTO;
 
 public class ProductDTO
 {
-    public long Id { get; set; }
+    public int Id { get; set; }
 
     [Required]
     [MaxLength(50)]
@@ -17,6 +17,9 @@ public class ProductDTO
 
     [MaxLength(100)]
     public string Description { get; set; }
+
+    [Timestamp]
+    public byte[]? Timestamp { get; set; }
 
     public ProductDTO Clone()
     {
@@ -26,5 +29,10 @@ public class ProductDTO
             Title = Title,
             Description = Description
         };
+    }
+
+    public override string ToString()
+    {
+        return $"Id: {Id}   |Title: {Title} |Description: {Description}";
     }
 }

@@ -20,7 +20,8 @@ public static class DTOMapper
         {
             Id = product.Id,
             Title = product.Title,
-            Description = product.Description
+            Description = product.Description,
+            Timestamp = product.Timestamp
         };
     }
 }

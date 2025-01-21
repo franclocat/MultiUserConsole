@@ -7,7 +7,7 @@ namespace Client.Services;
 
 internal class ProductService : IProductService
 {
-    private const string _ENDPOINT = "/Product";
+    private const string _ENDPOINT = "/Product/";
     private readonly HttpClient _client;
     private string _authToken = string.Empty;
     public ProductService(string baseUrl)
@@ -36,7 +36,7 @@ internal class ProductService : IProductService
 
     public async Task<GenericServiceResult<ProductDTO>> Update(ProductDTO productDto)
     {
-        HttpResponseMessage response = await _client.PutAsJsonAsync($"/{productDto.Id}", productDto);
+        HttpResponseMessage response = await _client.PutAsJsonAsync($"{productDto.Id}", productDto);
         return new GenericServiceResult<ProductDTO>(response);
     }
 }
